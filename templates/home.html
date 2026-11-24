@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Link{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <h1 class="hero-title">Skill <span>Link</span></h1>
+    <p class="hero-desc">
+      A campus platform that bridges students across all engineering and technology departments.
+      Exchange your knowledge, find the right study partners, and team up for hackathons and ambitious college projects.
+    </p>
+
+    <!-- Main Portal Options: Student & Admin -->
+    <div class="portal-selector-card">
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
+        Choose Your Portal to Continue
+      </h3>
+
+      <div class="portal-grid">
+        <!-- Option A: Student -->
+        <div class="portal-option-box" id="studentPortalBox">
+          <div class="portal-box-icon">👨‍🎓</div>
+          <div class="portal-box-title">Student Portal</div>
+          <div class="portal-box-desc">
+            Explore peer skills, send exchange requests, and collaborate on projects and hackathons.
+          </div>
+          <button type="button" class="btn btn-primary btn-sm btn-block">
+            Access as Student &rarr;
+          </button>
+        </div>
+
+        <!-- Option B: Admin -->
+        <a href="{{ url_for('admin_login') }}" class="portal-option-box">
+          <div class="portal-box-icon">🛡️</div>
+          <div class="portal-box-title">Admin Portal</div>
+          <div class="portal-box-desc">
+            Campus administration panel to monitor registrations, skill demands, and manage student accounts.
+          </div>
+          <span class="btn btn-outline btn-sm btn-block">
+            Access as Admin &rarr;
+          </span>
+        </a>
+      </div>
+
+      <!-- Student Actions Panel (revealed when Student is clicked) -->
+      <div class="student-actions-panel" id="studentActionsPanel">
+        <p style="font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+          Are you new to Skill Link or already have a registered student account?
+        </p>
+        <div class="student-actions-grid">
+          <a href="{{ url_for('student_register') }}" class="btn btn-primary btn-lg">
+            <span>✨</span> New User? Register
+          </a>
+          <a href="{{ url_for('student_login') }}" class="btn btn-secondary btn-lg">
+            <span>🔑</span> Already Registered? Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Platform Key Features Grid -->
+<section class="features-section">
+  <div class="container">
+    <h2 class="section-title">Everything College Students Need in One Place</h2>
+    <p class="section-desc">Empowering interdisciplinary innovation and peer-to-peer mentoring across campus.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <div class="feature-title">Peer Skill Exchange</div>
+        <p class="feature-text">
+          Trade your coding, design, or hardware skills with peers who can teach you what you want to learn. Mutual growth with direct collaboration requests.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <div class="feature-title">Hackathon & Project Teaming</div>
+        <p class="feature-text">
+          Post your hackathon idea or semester project. Specify required skills, team size, and review interested applicant profiles with one-click acceptance.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Cross-Department Connections</div>
+        <p class="feature-text">
+          Need a CAD designer from Mechanical or an AI model developer from AIDS? Easily filter and search students across all departments and academic years.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-title">Requests & Application Hub</div>
+        <p class="feature-text">
+          Track incoming and outgoing skill trade invitations and project applications in real-time with clean status badges (Pending, Accepted, Rejected).
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

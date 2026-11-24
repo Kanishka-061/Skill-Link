@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" fill="none">
+  <!-- Soft background circle -->
+  <circle cx="32" cy="32" r="30" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="2"/>
+  
+  <!-- Left Student Figure -->
+  <circle cx="21" cy="22" r="6" fill="#047857"/>
+  <path d="M11 41c0-5.523 4.477-10 10-10s10 4.477 10 10v2H11v-2z" fill="#059669"/>
+  
+  <!-- Right Student Figure -->
+  <circle cx="43" cy="22" r="6" fill="#065f46"/>
+  <path d="M33 41c0-5.523 4.477-10 10-10s10 4.477 10 10v2H33v-2z" fill="#10b981"/>
+
+  <!-- Shared Learning / Knowledge Bridge (Laptop & Connection Link) -->
+  <rect x="22" y="36" width="20" height="13" rx="2" fill="#1e293b"/>
+  <rect x="24" y="38" width="16" height="8" rx="1" fill="#ecfdf5"/>
+  <path d="M19 49h26a2 2 0 0 1 2 2H17a2 2 0 0 1 2-2z" fill="#334155"/>
+
+  <!-- Collaboration Connection Node / Shared Idea Spark above Laptop -->
+  <circle cx="32" cy="18" r="4.5" fill="#f59e0b"/>
+  <!-- Light rays/sparks connecting the learners -->
+  <path d="M26 19.5l-3.5 1.5M38 19.5l3.5 1.5M32 11v3" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Connecting Skill Link line between two students -->
+  <path d="M26 23c2.5-1.5 9.5-1.5 12 0" stroke="#10b981" stroke-width="1.5" stroke-dasharray="2 1.5" stroke-linecap="round"/>
+</svg>

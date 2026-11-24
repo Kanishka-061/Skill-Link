@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Projects & Hackathon Collaboration | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a href="{{ url_for('student_dashboard') }}" class="btn-back">&larr; Back to Dashboard</a>
+  <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 class="page-title">Hackathon & Project Collaboration</h1>
+      <p class="page-subtitle">Team up with skilled peers across departments to build winning projects and hackathon prototypes.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{{ url_for('requests_page') }}" class="btn btn-secondary btn-sm">
+        📋 View Applications
+      </a>
+      <button type="button" class="btn btn-primary btn-sm" data-modal-target="#createProjectModal">
+        ➕ Post New Project Idea
+      </button>
+    </div>
+  </div>
+
+  <!-- Search & Category Filters -->
+  <div class="card" style="margin-bottom: 2rem; padding: 1.25rem;">
+    <form method="GET" action="{{ url_for('projects') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+      
+      <div style="flex: 2; min-width: 250px;">
+        <label class="form-label" for="searchQuery" style="font-size: 0.85rem;">Search Projects or Required Skills</label>
+        <input type="text" class="form-control" id="searchQuery" name="q" 
+               value="{{ query }}" placeholder="e.g. IoT, Web App, Flutter, AI, Smart Campus...">
+      </div>
+
+      <div style="flex: 1.5; min-width: 200px;">
+        <label class="form-label" for="categoryFilter" style="font-size: 0.85rem;">Category</label>
+        <select class="form-select" id="categoryFilter" name="category">
+          <option value="">All Categories</option>
+          {% for cat in categories_list %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">
+          🔍 Filter
+        </button>
+        {% if query or selected_category %}
+          <a href="{{ url_for('projects') }}" class="btn btn-outline" title="Clear Filters">
+            Reset
+          </a>
+        {% endif %}
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Projects Grid -->
+  {% if projects %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+      {% for proj in projects %}
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <!-- Card Top: Category and Status -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span class="badge badge-primary">{{ proj.category }}</span>
+              <span class="badge {% if proj.status == 'Open' %}badge-success{% else %}badge-neutral{% endif %}">
+                ● {{ proj.status }}
+              </span>
+            </div>
+
+            <!-- Title & Description -->
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1.3;">
+              {{ proj.title }}
+            </h3>
+
+            <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.5;">
+              {{ proj.description }}
+            </p>
+
+            <!-- Required Skills Tags -->
+            <div style="margin-bottom: 1rem;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                Required Skills:
+              </span>
+              <div style="margin-top: 4px;">
+                {% for skill in proj.required_skills.split(',') %}
+                  <span class="tag tag-accent">{{ skill.strip() }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Team Size & Owner info -->
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: 1.25rem; font-size: 0.85rem; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="color: var(--text-muted);">Team Target:</span>
+                <strong>{{ proj.team_size }} members</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Project Owner:</span>
+                <strong>{{ proj.owner_name }} ({{ proj.owner_dept }})</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Area -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              👥 {{ proj.app_count }} applications
+            </div>
+
+            {% if proj.owner_id == session['user_id'] %}
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="badge badge-info">Your Project</span>
+                <a href="{{ url_for('requests_page') }}" class="btn btn-outline btn-sm">
+                  Review Applicants
+                </a>
+              </div>
+            {% elif proj.id in applied_map %}
+              <span class="badge {% if applied_map[proj.id] == 'Pending' %}badge-warning{% elif applied_map[proj.id] == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}">
+                Application {{ applied_map[proj.id] }}
+              </span>
+            {% elif proj.status == 'Open' %}
+              <button type="button" class="btn btn-primary btn-sm"
+                      data-modal-target="#applyProjectModal"
+                      data-project-id="{{ proj.id }}"
+                      data-project-title="{{ proj.title }}">
+                Apply to Join &rarr;
+              </button>
+            {% else %}
+              <span class="badge badge-neutral">Applications Closed</span>
+            {% endif %}
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🚀</div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+        No Projects Found
+      </h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Be the first to post your hackathon or capstone project idea to attract talented teammates!
+      </p>
+      <button type="button" class="btn btn-primary" data-modal-target="#createProjectModal">
+        ➕ Post a Project Idea
+      </button>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Modal: Post New Project -->
+<div class="modal-overlay" id="createProjectModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Post a Project / Hackathon Idea</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('create_project') }}">
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label class="form-label" for="projectTitle">Project Title <span class="required">*</span></label>
+          <input type="text" class="form-control" id="projectTitle" name="title" 
+                 placeholder="e.g. Smart Campus Navigation App" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="projectCategory">Project Category <span class="required">*</span></label>
+          <select class="form-select" id="projectCategory" name="category" required>
+            <option value="" disabled selected>-- Select Category --</option>
+            {% for cat in categories_list %}
+              <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="projectDescription">Project Description <span class="required">*</span></label>
+          <textarea class="form-control" id="projectDescription" name="description" rows="3" 
+                    placeholder="Describe the problem, solution, architecture, and goals..." required></textarea>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="requiredSkills">Required Skills <span class="required">*</span></label>
+            <input type="text" class="form-control" id="requiredSkills" name="required_skills" 
+                   placeholder="e.g. Python, UI/UX, Flutter" required>
+            <div class="form-text">Comma-separated skills.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="teamSize">Target Team Size <span class="required">*</span></label>
+            <input type="number" class="form-control" id="teamSize" name="team_size" 
+                   min="2" max="10" value="4" required>
+            <div class="form-text">Including yourself.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Publish Project Idea</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Apply to Join Project -->
+<div class="modal-overlay" id="applyProjectModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Apply to Join Project Team</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('apply_project') }}">
+      <div class="modal-body">
+        <input type="hidden" name="project_id" id="modalProjectId">
+
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Applying for: <strong id="modalProjectTitle" style="color: var(--primary);">Project</strong>
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="appMessage">Why are you interested and what skills do you bring? <span class="required">*</span></label>
+          <textarea class="form-control" id="appMessage" name="message" rows="4" 
+                    placeholder="Hi! I am experienced in frontend design and have built similar projects..." required></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Events & Hackathons | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <a href="{{ url_for('student_dashboard') }}" class="btn-back">&larr; Back to Dashboard</a>
+
+  <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 class="page-title">Campus Events & Hackathons</h1>
+      <p class="page-subtitle">Official college hackathons, workshops, guest seminars, and competitions posted by administration.</p>
+    </div>
+  </div>
+
+  <!-- Search & Event Type Filter -->
+  <div class="card" style="margin-bottom: 2rem; padding: 1.25rem;">
+    <form method="GET" action="{{ url_for('student_events') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+      
+      <div style="flex: 2; min-width: 250px;">
+        <label class="form-label" for="searchEvent" style="font-size: 0.85rem;">Search Events, Topics, or Venue</label>
+        <input type="text" class="form-control" id="searchEvent" name="q" 
+               value="{{ query }}" placeholder="e.g. Hackathon, Web Development, Auditorium...">
+      </div>
+
+      <div style="flex: 1.5; min-width: 180px;">
+        <label class="form-label" for="eventTypeFilter" style="font-size: 0.85rem;">Event Type</label>
+        <select class="form-select" id="eventTypeFilter" name="type">
+          <option value="">All Event Types</option>
+          {% for etype in event_types_list %}
+            <option value="{{ etype }}" {% if selected_type == etype %}selected{% endif %}>{{ etype }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">
+          🔍 Filter
+        </button>
+        {% if query or selected_type %}
+          <a href="{{ url_for('student_events') }}" class="btn btn-outline" title="Clear Filters">
+            Reset
+          </a>
+        {% endif %}
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Events List Grid -->
+  {% if events %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+      {% for ev in events %}
+        <div class="card event-card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid {% if ev.event_type == 'Hackathon' %}#8b5cf6{% elif ev.event_type == 'Workshop' %}#10b981{% elif ev.event_type == 'Seminar' %}#0ea5e9{% elif ev.event_type == 'Competition' %}#f59e0b{% else %}#059669{% endif %};">
+          <div>
+            <!-- Top Badges -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span class="badge {% if ev.event_type == 'Hackathon' %}badge-accent{% elif ev.event_type == 'Workshop' %}badge-success{% elif ev.event_type == 'Seminar' %}badge-info{% elif ev.event_type == 'Competition' %}badge-warning{% else %}badge-primary{% endif %}">
+                {% if ev.event_type == 'Hackathon' %}🚀{% elif ev.event_type == 'Workshop' %}🛠️{% elif ev.event_type == 'Seminar' %}🎙️{% elif ev.event_type == 'Competition' %}🏆{% else %}📌{% endif %}
+                {{ ev.event_type }}
+              </span>
+              <span class="badge badge-neutral" style="font-size: 0.75rem;">
+                Official Event
+              </span>
+            </div>
+
+            <!-- Title & Description -->
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem; line-height: 1.35;">
+              {{ ev.title }}
+            </h3>
+
+            <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.55;">
+              {{ ev.description }}
+            </p>
+
+            <!-- Event Details Box -->
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 1.25rem; font-size: 0.88rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--primary); font-size: 1rem;">📅</span>
+                <span style="color: var(--text-muted); min-width: 100px;">Event Date:</span>
+                <strong style="color: var(--text-primary);">{{ ev.event_date }}</strong>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: #ef4444; font-size: 1rem;">⏳</span>
+                <span style="color: var(--text-muted); min-width: 100px;">Deadline:</span>
+                <strong style="color: #b91c1c;">{{ ev.registration_deadline }}</strong>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: #0284c7; font-size: 1rem;">📍</span>
+                <span style="color: var(--text-muted); min-width: 100px;">Venue:</span>
+                <strong style="color: var(--text-primary);">{{ ev.venue }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Area -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              Published by College Admin
+            </div>
+
+            {% if ev.registration_link %}
+              <a href="{{ ev.registration_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span>Register Online</span> &rarr;
+              </a>
+            {% else %}
+              <span class="badge badge-neutral" style="font-size: 0.82rem; padding: 6px 10px;">
+                🏢 In-Person / On-Campus Registration
+              </span>
+            {% endif %}
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3.5rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎪</div>
+      <h3 style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+        No Events Found
+      </h3>
+      <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem auto;">
+        No events currently match your search criteria. Check back soon for new hackathons and workshops posted by the administration!
+      </p>
+      {% if query or selected_type %}
+        <a href="{{ url_for('student_events') }}" class="btn btn-primary">
+          View All Events
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

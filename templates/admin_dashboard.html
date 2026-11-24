@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <!-- Admin Header -->
+  <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge badge-warning" style="font-size: 0.85rem;">🛡️ Campus Administrator</span>
+        <span style="color: var(--text-muted); font-size: 0.9rem;">Signed in as <strong>{{ admin_user }}</strong></span>
+      </div>
+      <h1 class="page-title" style="margin-top: 6px;">Dashboard</h1>
+      <p class="page-subtitle">Platform-wide analytics, student management, and campus collaboration overview.</p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{{ url_for('admin_logout') }}" class="btn btn-danger btn-sm">
+        Admin Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Statistics Metrics -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🎓</div>
+      <div>
+        <div class="stat-value">{{ stats.students }}</div>
+        <div class="stat-label">Registered Students</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon info">💡</div>
+      <div>
+        <div class="stat-value">{{ stats.projects }}</div>
+        <div class="stat-label">Collaboration Projects</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon warning">🔄</div>
+      <div>
+        <div class="stat-value">{{ stats.skill_requests }}</div>
+        <div class="stat-label">Skill Exchange Requests</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon accent">✨</div>
+      <div>
+        <div class="stat-value">{{ stats.skills_count }}</div>
+        <div class="stat-label">Unique Skills Listed</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #ede9fe; color: #7c3aed;">🎪</div>
+      <div>
+        <div class="stat-value">{{ stats.events_count }}</div>
+        <div class="stat-label">Published Events</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Navigation Tabs -->
+  <div class="tabs-container">
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-students">
+        👨‍🎓 Students Directory ({{ students|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-events">
+        🎪 Events & Hackathons ({{ events|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-skills">
+        🏷️ Available Skills Pool ({{ available_skills|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-skill-requests">
+        🤝 Skill Exchange Requests ({{ skill_requests|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-projects">
+        🚀 Projects & Applications ({{ projects|length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: Student Management -->
+    <div class="tab-pane active" id="tab-students">
+      
+      <!-- Student Filter / Search Form -->
+      <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+        <form method="GET" action="{{ url_for('admin_dashboard') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+          <div style="flex: 2; min-width: 220px;">
+            <label class="form-label" style="font-size: 0.85rem;">Search by Name, Reg No, or Email</label>
+            <input type="text" class="form-control" name="q" value="{{ search_query }}" placeholder="Search students...">
+          </div>
+
+          <div style="flex: 1.5; min-width: 180px;">
+            <label class="form-label" style="font-size: 0.85rem;">Department</label>
+            <select class="form-select" name="department">
+              <option value="">All Departments</option>
+              {% for d in departments_list %}
+                <option value="{{ d }}" {% if selected_dept == d %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 130px;">
+            <label class="form-label" style="font-size: 0.85rem;">Year</label>
+            <select class="form-select" name="year">
+              <option value="">All Years</option>
+              {% for y in years_list %}
+                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            {% if search_query or selected_dept or selected_year %}
+              <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline">Reset</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <!-- Students Table -->
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Student Details</th>
+              <th>Academic Info</th>
+              <th>Skills Known</th>
+              <th>Learning Goals</th>
+              <th>Joined Date</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+              <tr>
+                <td>
+                  <strong>{{ s.full_name }}</strong><br>
+                  <span style="font-size: 0.82rem; color: var(--text-muted);">
+                    {{ s.register_number }} &bull; {{ s.college_email }}
+                  </span>
+                </td>
+                <td>
+                  <div>{{ s.department }}</div>
+                  <span class="badge badge-neutral">{{ s.year_of_study }} - Sec {{ s.section }}</span>
+                </td>
+                <td style="max-width: 240px;">
+                  {% for sk in s.skills_known.split(',') %}
+                    <span class="tag tag-accent">{{ sk.strip() }}</span>
+                  {% endfor %}
+                </td>
+                <td style="max-width: 240px;">
+                  {% for sk in s.skills_interested.split(',') %}
+                    <span class="tag">{{ sk.strip() }}</span>
+                  {% endfor %}
+                </td>
+                <td style="font-size: 0.82rem; color: var(--text-muted); white-space: nowrap;">
+                  {{ s.created_at[:10] }}
+                </td>
+                <td style="text-align: right; white-space: nowrap;">
+                  <form method="POST" action="{{ url_for('admin_delete_student', student_id=s.id) }}" 
+                        onsubmit="return confirm('Are you sure you want to delete student account {{ s.full_name }}? All associated requests and projects will be permanently removed.');"
+                        style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete Student Account">
+                      🗑️ Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                  No students matching search criteria.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: Events & Hackathons Management (NEW) -->
+    <div class="tab-pane" id="tab-events">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header-flex" style="flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 class="card-title" style="margin: 0;">Events & Hackathons Management</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 2px;">
+              Publish, update, and manage official campus hackathons, workshops, and technical competitions.
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" data-modal-target="#addEventModal">
+            ➕ Add New Event / Hackathon
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Event Name & Type</th>
+                <th>Description</th>
+                <th>Event Date & Deadline</th>
+                <th>Venue</th>
+                <th>Registration</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ev in events %}
+                <tr>
+                  <td>
+                    <strong>{{ ev.title }}</strong><br>
+                    <span class="badge {% if ev.event_type == 'Hackathon' %}badge-accent{% elif ev.event_type == 'Workshop' %}badge-success{% elif ev.event_type == 'Seminar' %}badge-info{% elif ev.event_type == 'Competition' %}badge-warning{% else %}badge-primary{% endif %}" style="margin-top: 4px;">
+                      {{ ev.event_type }}
+                    </span>
+                  </td>
+                  <td style="max-width: 280px; font-size: 0.88rem; color: var(--text-secondary);">
+                    {{ ev.description[:120] }}{% if ev.description|length > 120 %}...{% endif %}
+                  </td>
+                  <td style="white-space: nowrap; font-size: 0.85rem;">
+                    <div>📅 <strong>{{ ev.event_date }}</strong></div>
+                    <div style="color: #b91c1c; font-size: 0.8rem; margin-top: 2px;">⏳ Due: {{ ev.registration_deadline }}</div>
+                  </td>
+                  <td style="font-size: 0.88rem;">
+                    📍 {{ ev.venue }}
+                  </td>
+                  <td>
+                    {% if ev.registration_link %}
+                      <a href="{{ ev.registration_link }}" target="_blank" rel="noopener noreferrer" class="tag tag-accent" style="text-decoration: underline;" title="{{ ev.registration_link }}">
+                        External Link ↗
+                      </a>
+                    {% else %}
+                      <span class="badge badge-neutral" style="font-size: 0.75rem;">In-Person</span>
+                    {% endif %}
+                  </td>
+                  <td style="text-align: right; white-space: nowrap;">
+                    <button type="button" class="btn btn-outline btn-sm edit-event-btn"
+                            data-event-id="{{ ev.id }}"
+                            data-event-title="{{ ev.title }}"
+                            data-event-type="{{ ev.event_type }}"
+                            data-event-date="{{ ev.event_date }}"
+                            data-event-deadline="{{ ev.registration_deadline }}"
+                            data-event-venue="{{ ev.venue }}"
+                            data-event-link="{{ ev.registration_link or '' }}"
+                            data-event-desc="{{ ev.description }}"
+                            title="Edit Event Details">
+                      ✏️ Edit
+                    </button>
+                    <form method="POST" action="{{ url_for('admin_delete_event', event_id=ev.id) }}"
+                          onsubmit="return confirm('Are you sure you want to delete event &quot;{{ ev.title }}&quot;?');"
+                          style="display: inline;">
+                      <button type="submit" class="btn btn-danger btn-sm" title="Delete Event">
+                        🗑️ Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                    No events published yet. Click "Add New Event / Hackathon" above to create the first one.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Skills Pool Overview -->
+    <div class="tab-pane" id="tab-skills">
+      <div class="card">
+        <h3 class="card-title" style="margin-bottom: 0.5rem;">Catalog of Campus Skills</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+          These are skills currently offered by registered students across all departments.
+        </p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          {% for sk in available_skills %}
+            <span class="tag tag-accent" style="font-size: 0.95rem; padding: 6px 14px; border-radius: var(--radius-md);">
+              {{ sk }}
+            </span>
+          {% else %}
+            <p style="color: var(--text-muted);">No skills logged in the system yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Skill Exchange Requests -->
+    <div class="tab-pane" id="tab-skill-requests">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Sender</th>
+              <th>Receiver</th>
+              <th>Offered Skill</th>
+              <th>Wanted Skill</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in skill_requests %}
+              <tr>
+                <td>#{{ req.id }}</td>
+                <td>
+                  <strong>{{ req.sender_name }}</strong><br>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">{{ req.sender_reg }}</span>
+                </td>
+                <td>
+                  <strong>{{ req.receiver_name }}</strong><br>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">{{ req.receiver_reg }}</span>
+                </td>
+                <td><span class="tag tag-accent">{{ req.offered_skill }}</span></td>
+                <td><span class="tag">{{ req.wanted_skill }}</span></td>
+                <td>
+                  <span class="badge {% if req.status == 'Pending' %}badge-warning{% elif req.status == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <td style="font-size: 0.82rem; color: var(--text-muted); white-space: nowrap;">
+                  {{ req.created_at[:10] }}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                  No skill exchange requests found in the system.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: Projects & Applications -->
+    <div class="tab-pane" id="tab-projects">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Project Title & Category</th>
+              <th>Owner</th>
+              <th>Target Team</th>
+              <th>Required Skills</th>
+              <th>Applications</th>
+              <th>Status</th>
+              <th style="text-align: right;">Toggle Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in projects %}
+              <tr>
+                <td>
+                  <strong>{{ p.title }}</strong><br>
+                  <span class="badge badge-info" style="margin-top: 4px;">{{ p.category }}</span>
+                </td>
+                <td>
+                  {{ p.owner_name }}<br>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">{{ p.owner_reg }}</span>
+                </td>
+                <td>{{ p.team_size }} members</td>
+                <td style="max-width: 220px;">
+                  {% for sk in p.required_skills.split(',') %}
+                    <span class="tag tag-accent">{{ sk.strip() }}</span>
+                  {% endfor %}
+                </td>
+                <td>
+                  <span class="badge badge-neutral">{{ p.total_apps }} applicant(s)</span>
+                </td>
+                <td>
+                  <span class="badge {% if p.status == 'Open' %}badge-success{% else %}badge-neutral{% endif %}">
+                    {{ p.status }}
+                  </span>
+                </td>
+                <td style="text-align: right;">
+                  <form method="POST" action="{{ url_for('admin_toggle_project_status', project_id=p.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-outline btn-sm">
+                      Toggle to {% if p.status == 'Open' %}Closed{% else %}Open{% endif %}
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                  No projects posted on the platform yet.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Modal: Add New Event / Hackathon -->
+<div class="modal-overlay" id="addEventModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Add College Event / Hackathon</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin_create_event') }}">
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label class="form-label" for="add_event_title">Event / Hackathon Name <span class="required">*</span></label>
+          <input type="text" class="form-control" id="add_event_title" name="title" 
+                 placeholder="e.g. Annual Smart India Hackathon 2026" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="add_event_type">Event Type <span class="required">*</span></label>
+            <select class="form-select" id="add_event_type" name="event_type" required>
+              <option value="" disabled selected>-- Select Type --</option>
+              {% for etype in event_types_list %}
+                <option value="{{ etype }}">{{ etype }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="add_event_venue">Venue / Location <span class="required">*</span></label>
+            <input type="text" class="form-control" id="add_event_venue" name="venue" 
+                   placeholder="e.g. Tech Auditorium, Block B" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="add_event_date">Event Date <span class="required">*</span></label>
+            <input type="date" class="form-control" id="add_event_date" name="event_date" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="add_event_deadline">Registration Deadline <span class="required">*</span></label>
+            <input type="date" class="form-control" id="add_event_deadline" name="registration_deadline" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="add_event_link">Registration Link or Info (Optional)</label>
+          <input type="url" class="form-control" id="add_event_link" name="registration_link" 
+                 placeholder="https://example.edu/register">
+          <div class="form-text">Leave blank if registration is conducted on-campus / in-person.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="add_event_desc">Short Description <span class="required">*</span></label>
+          <textarea class="form-control" id="add_event_desc" name="description" rows="3" 
+                    placeholder="Describe the event, guidelines, eligibility, prizes, and themes..." required></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Publish Event</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Edit Existing Event / Hackathon -->
+<div class="modal-overlay" id="editEventModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Event / Hackathon</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+
+    <form method="POST" id="editEventForm" action="">
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label class="form-label" for="edit_event_title">Event / Hackathon Name <span class="required">*</span></label>
+          <input type="text" class="form-control" id="edit_event_title" name="title" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="edit_event_type">Event Type <span class="required">*</span></label>
+            <select class="form-select" id="edit_event_type" name="event_type" required>
+              {% for etype in event_types_list %}
+                <option value="{{ etype }}">{{ etype }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit_event_venue">Venue / Location <span class="required">*</span></label>
+            <input type="text" class="form-control" id="edit_event_venue" name="venue" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="edit_event_date">Event Date <span class="required">*</span></label>
+            <input type="date" class="form-control" id="edit_event_date" name="event_date" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit_event_deadline">Registration Deadline <span class="required">*</span></label>
+            <input type="date" class="form-control" id="edit_event_deadline" name="registration_deadline" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit_event_link">Registration Link or Info (Optional)</label>
+          <input type="url" class="form-control" id="edit_event_link" name="registration_link">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit_event_desc">Short Description <span class="required">*</span></label>
+          <textarea class="form-control" id="edit_event_desc" name="description" rows="3" required></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

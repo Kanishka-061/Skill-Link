@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <!-- Profile Header Banner -->
+  <div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%); border-left: 5px solid var(--primary);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
+      <div style="display: flex; gap: 1.25rem; align-items: center;">
+        <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+          {{ student.full_name[0] }}
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+              {{ student.full_name }}
+            </h1>
+            <span class="badge badge-primary">{{ student.register_number }}</span>
+            <span class="badge badge-neutral">Section {{ student.section }}</span>
+          </div>
+          <div style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 4px;">
+            🎓 {{ student.department }} &bull; <strong>{{ student.year_of_study }}</strong>
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">
+            ✉️ {{ student.college_email }}
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <a href="{{ url_for('student_profile') }}" class="btn btn-secondary btn-sm">
+          ✏️ Edit Profile
+        </a>
+        <a href="{{ url_for('student_logout') }}" class="btn btn-outline btn-sm">
+          Logout
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Profile Badges -->
+    <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--primary-border); display: flex; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Skills I Know:</span>
+        <div style="margin-top: 4px;">
+          {% for skill in student.skills_known.split(',') %}
+            <span class="tag tag-accent">{{ skill.strip() }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Interested in Learning:</span>
+        <div style="margin-top: 4px;">
+          {% for skill in student.skills_interested.split(',') %}
+            <span class="tag">{{ skill.strip() }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Stat Widgets -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon warning">📬</div>
+      <div>
+        <div class="stat-value">{{ stats.pending_requests }}</div>
+        <div class="stat-label">Pending Requests</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon info">📤</div>
+      <div>
+        <div class="stat-value">{{ stats.sent_requests }}</div>
+        <div class="stat-label">Requests Sent</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🚀</div>
+      <div>
+        <div class="stat-value">{{ stats.my_projects }}</div>
+        <div class="stat-label">My Projects Posted</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon accent">📝</div>
+      <div>
+        <div class="stat-value">{{ stats.my_applications }}</div>
+        <div class="stat-label">Team Applications</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #ede9fe; color: #7c3aed;">🎪</div>
+      <div>
+        <div class="stat-value">{{ stats.events_count }}</div>
+        <div class="stat-label">College Events</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Portal Action Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+    <!-- Section A: My Profile -->
+    <a href="{{ url_for('student_profile') }}" class="card" style="text-decoration: none; border-top: 4px solid var(--primary);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.8rem;">👤</span>
+        <span class="badge badge-primary">Profile</span>
+      </div>
+      <h3 class="card-title" style="margin-bottom: 0.4rem;">My Profile</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Keep your technical skills, portfolio links, and certifications updated.
+      </p>
+      <span class="btn btn-outline btn-sm">Update Profile &rarr;</span>
+    </a>
+
+    <!-- Section B: Skill Exchange -->
+    <a href="{{ url_for('skill_exchange') }}" class="card" style="text-decoration: none; border-top: 4px solid var(--secondary);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.8rem;">🤝</span>
+        <span class="badge badge-primary">Skills</span>
+      </div>
+      <h3 class="card-title" style="margin-bottom: 0.4rem;">Skill Exchange</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Find peers possessing skills you want to learn and send exchange requests.
+      </p>
+      <span class="btn btn-outline btn-sm">Explore Skills &rarr;</span>
+    </a>
+
+    <!-- Section C: Projects & Hackathons -->
+    <a href="{{ url_for('projects') }}" class="card" style="text-decoration: none; border-top: 4px solid var(--accent);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.8rem;">💡</span>
+        <span class="badge badge-primary">Collab</span>
+      </div>
+      <h3 class="card-title" style="margin-bottom: 0.4rem;">Project Collab</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Post project ideas or join hackathon teams searching for your skills.
+      </p>
+      <span class="btn btn-outline btn-sm">Browse Projects &rarr;</span>
+    </a>
+
+    <!-- Section D: Events & Hackathons -->
+    <a href="{{ url_for('student_events') }}" class="card" style="text-decoration: none; border-top: 4px solid #8b5cf6;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.8rem;">🎪</span>
+        <span class="badge" style="background: #ede9fe; color: #6d28d9;">Events</span>
+      </div>
+      <h3 class="card-title" style="margin-bottom: 0.4rem;">Events & Hackathons</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        View college hackathons, workshops, and competitions posted by admin.
+      </p>
+      <span class="btn btn-outline btn-sm">View Events &rarr;</span>
+    </a>
+
+    <!-- Section E: My Requests & Applications -->
+    <a href="{{ url_for('requests_page') }}" class="card" style="text-decoration: none; border-top: 4px solid #f59e0b;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.8rem;">📋</span>
+        <span class="badge badge-warning">Requests</span>
+      </div>
+      <h3 class="card-title" style="margin-bottom: 0.4rem;">Requests & Status</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        Track all your incoming and sent skill requests and team applications.
+      </p>
+      <span class="btn btn-outline btn-sm">Manage Requests &rarr;</span>
+    </a>
+  </div>
+
+  <!-- Dashboard Activity Grid -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="form-grid-2">
+    
+    <!-- Left Column: Pending Requests -->
+    <div class="card">
+      <div class="card-header-flex">
+        <h3 class="card-title" style="margin: 0; font-size: 1.15rem;">Recent Requests Received</h3>
+        <a href="{{ url_for('requests_page') }}" class="btn btn-outline btn-sm">View All</a>
+      </div>
+
+      {% if recent_requests %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for req in recent_requests %}
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong>{{ req.sender_name }}</strong>
+                <span class="badge {% if req.status == 'Pending' %}badge-warning{% elif req.status == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}">
+                  {{ req.status }}
+                </span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+                {{ req.sender_dept }}
+              </div>
+              <div style="font-size: 0.88rem; margin-bottom: 10px;">
+                <strong>Offering:</strong> {{ req.offered_skill or 'Skill exchange' }}<br>
+                <strong>Seeking:</strong> {{ req.wanted_skill or 'Mentorship' }}
+              </div>
+              {% if req.status == 'Pending' %}
+                <div style="display: flex; gap: 0.5rem;">
+                  <form method="POST" action="{{ url_for('respond_skill_request') }}" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                  </form>
+                  <form method="POST" action="{{ url_for('respond_skill_request') }}" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn btn-outline btn-sm">Reject</button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
+          <p>No skill requests received yet.</p>
+          <a href="{{ url_for('skill_exchange') }}" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
+            Find Peers to Connect
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Campus Projects -->
+    <div class="card">
+      <div class="card-header-flex">
+        <h3 class="card-title" style="margin: 0; font-size: 1.15rem;">Open Projects on Campus</h3>
+        <a href="{{ url_for('projects') }}" class="btn btn-outline btn-sm">View All</a>
+      </div>
+
+      {% if latest_projects %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for proj in latest_projects %}
+            <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                <h4 style="font-size: 1rem; font-weight: 700; margin: 0; color: var(--text-primary);">
+                  {{ proj.title }}
+                </h4>
+                <span class="badge badge-info">{{ proj.category }}</span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+                By {{ proj.owner_name }} ({{ proj.owner_dept }})
+              </div>
+              <div style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 8px;">
+                {{ proj.description[:110] }}{% if proj.description|length > 110 %}...{% endif %}
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">
+                  Needs: {{ proj.required_skills[:35] }}{% if proj.required_skills|length > 35 %}...{% endif %}
+                </div>
+                <a href="{{ url_for('projects') }}" class="btn btn-primary btn-sm">
+                  View & Apply
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">💡</div>
+          <p>No other open projects right now.</p>
+          <a href="{{ url_for('projects') }}" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">
+            Post the First Project
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Upcoming Campus Events & Hackathons Preview -->
+  {% if upcoming_events %}
+    <div class="card" style="margin-top: 1.5rem; border-left: 4px solid #8b5cf6;">
+      <div class="card-header-flex">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">🎪</span>
+          <h3 class="card-title" style="margin: 0; font-size: 1.15rem;">Upcoming Campus Events & Hackathons</h3>
+        </div>
+        <a href="{{ url_for('student_events') }}" class="btn btn-outline btn-sm">View All Events &rarr;</a>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+        {% for ev in upcoming_events %}
+          <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span class="badge {% if ev.event_type == 'Hackathon' %}badge-accent{% elif ev.event_type == 'Workshop' %}badge-success{% elif ev.event_type == 'Seminar' %}badge-info{% else %}badge-primary{% endif %}">
+                  {{ ev.event_type }}
+                </span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">📅 {{ ev.event_date }}</span>
+              </div>
+              <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 6px 0; color: var(--text-primary);">
+                {{ ev.title }}
+              </h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
+                {{ ev.description[:95] }}{% if ev.description|length > 95 %}...{% endif %}
+              </p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 6px;">
+              <span style="font-size: 0.8rem; color: var(--text-muted);">📍 {{ ev.venue }}</span>
+              <a href="{{ url_for('student_events') }}" class="btn btn-primary btn-sm">Details</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

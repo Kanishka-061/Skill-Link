@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}My Requests & Applications | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a href="{{ url_for('student_dashboard') }}" class="btn-back">&larr; Back to Dashboard</a>
+  <div class="page-header">
+    <h1 class="page-title">My Requests & Applications</h1>
+    <p class="page-subtitle">Track, review, and manage your incoming and outgoing collaboration requests.</p>
+  </div>
+
+  <div class="tabs-container">
+    <!-- Tabs Navigation -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-received-skills">
+        📬 Received Skill Requests ({{ received_skill_requests|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-sent-skills">
+        📤 Sent Skill Requests ({{ sent_skill_requests|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-received-apps">
+        👥 Received Project Applications ({{ received_project_apps|length }})
+      </button>
+      <button class="tab-btn" data-tab="tab-sent-apps">
+        📝 Sent Project Applications ({{ sent_project_apps|length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: Received Skill Requests -->
+    <div class="tab-pane active" id="tab-received-skills">
+      {% if received_skill_requests %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          {% for req in received_skill_requests %}
+            <div class="card" style="border-left: 4px solid var(--primary);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                      {{ req.sender_name }}
+                    </h3>
+                    <span class="badge badge-primary">{{ req.sender_reg }}</span>
+                    <span class="badge badge-neutral">{{ req.sender_year }}</span>
+                  </div>
+                  <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 2px;">
+                    🎓 {{ req.sender_dept }} &bull; ✉️ {{ req.sender_email }}
+                  </div>
+                </div>
+
+                <div>
+                  <span class="badge {% if req.status == 'Pending' %}badge-warning{% elif req.status == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 0.88rem; padding: 5px 12px;">
+                    {{ req.status }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Skills Trade Details -->
+              <div class="form-grid-2" style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                <div>
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                    Offered to Share:
+                  </span>
+                  <div style="font-weight: 600; color: var(--primary-dark); margin-top: 2px;">
+                    {{ req.offered_skill or 'General Peer Mentorship' }}
+                  </div>
+                </div>
+                <div>
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                    Wants to Learn From You:
+                  </span>
+                  <div style="font-weight: 600; color: var(--secondary); margin-top: 2px;">
+                    {{ req.wanted_skill or 'Your Listed Skills' }}
+                  </div>
+                </div>
+              </div>
+
+              {% if req.message %}
+                <div style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                  <strong>Message:</strong> "{{ req.message }}"
+                </div>
+              {% endif %}
+
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Received on: {{ req.created_at }}
+              </div>
+
+              <!-- Action buttons for receiver -->
+              {% if req.status == 'Pending' %}
+                <div style="display: flex; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                  <form method="POST" action="{{ url_for('respond_skill_request') }}" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                      ✓ Accept Exchange
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('respond_skill_request') }}" style="display: inline;">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn btn-outline btn-sm">
+                      ✕ Decline
+                    </button>
+                  </form>
+                </div>
+              {% else %}
+                <div style="font-size: 0.88rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                  You have <strong>{{ req.status.lower() }}</strong> this skill exchange request.
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📬</div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+            No Received Skill Requests
+          </h3>
+          <p style="color: var(--text-muted);">
+            When peers find your skills and send an exchange invitation, it will appear here.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 2: Sent Skill Requests -->
+    <div class="tab-pane" id="tab-sent-skills">
+      {% if sent_skill_requests %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          {% for req in sent_skill_requests %}
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                      Request to: {{ req.receiver_name }}
+                    </h3>
+                    <span class="badge badge-primary">{{ req.receiver_reg }}</span>
+                    <span class="badge badge-neutral">{{ req.receiver_year }}</span>
+                  </div>
+                  <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 2px;">
+                    🎓 {{ req.receiver_dept }} &bull; ✉️ {{ req.receiver_email }}
+                  </div>
+                </div>
+
+                <div>
+                  <span class="badge {% if req.status == 'Pending' %}badge-warning{% elif req.status == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 0.88rem; padding: 5px 12px;">
+                    {{ req.status }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-grid-2" style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                <div>
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                    You Offered:
+                  </span>
+                  <div style="font-weight: 600; color: var(--primary-dark); margin-top: 2px;">
+                    {{ req.offered_skill }}
+                  </div>
+                </div>
+                <div>
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                    You Wanted:
+                  </span>
+                  <div style="font-weight: 600; color: var(--secondary); margin-top: 2px;">
+                    {{ req.wanted_skill }}
+                  </div>
+                </div>
+              </div>
+
+              {% if req.message %}
+                <div style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                  <strong>Your Note:</strong> "{{ req.message }}"
+                </div>
+              {% endif %}
+
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Sent on: {{ req.created_at }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📤</div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+            No Sent Requests Yet
+          </h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            Browse students with skills you want to learn and send your first request!
+          </p>
+          <a href="{{ url_for('skill_exchange') }}" class="btn btn-primary">
+            Explore Skill Exchange
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 3: Received Project Applications -->
+    <div class="tab-pane" id="tab-received-apps">
+      {% if received_project_apps %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          {% for app in received_project_apps %}
+            <div class="card" style="border-left: 4px solid var(--accent);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <span class="badge badge-info" style="margin-bottom: 6px;">{{ app.project_category }}</span>
+                  <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                    Project: {{ app.project_title }}
+                  </h3>
+                  <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">
+                    Applicant: <strong>{{ app.applicant_name }}</strong> ({{ app.applicant_reg }} &bull; {{ app.applicant_dept }} &bull; {{ app.applicant_year }})
+                  </div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">
+                    ✉️ {{ app.applicant_email }}
+                  </div>
+                </div>
+
+                <div>
+                  <span class="badge {% if app.status == 'Pending' %}badge-warning{% elif app.status == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 0.88rem; padding: 5px 12px;">
+                    {{ app.status }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Applicant Skills -->
+              <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                  Applicant's Skills:
+                </span>
+                <div style="margin-top: 4px;">
+                  {% for s in app.applicant_skills.split(',') %}
+                    <span class="tag tag-accent">{{ s.strip() }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Message -->
+              <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1rem; border-left: 3px solid var(--primary);">
+                <strong>Application Note:</strong> "{{ app.message }}"
+              </div>
+
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Applied on: {{ app.created_at }}
+              </div>
+
+              <!-- Action buttons for project owner -->
+              {% if app.status == 'Pending' %}
+                <div style="display: flex; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                  <form method="POST" action="{{ url_for('respond_project_app') }}" style="display: inline;">
+                    <input type="hidden" name="app_id" value="{{ app.id }}">
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                      ✓ Accept Teammate
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('respond_project_app') }}" style="display: inline;">
+                    <input type="hidden" name="app_id" value="{{ app.id }}">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn btn-outline btn-sm">
+                      ✕ Reject Application
+                    </button>
+                  </form>
+                </div>
+              {% else %}
+                <div style="font-size: 0.88rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                  Application has been <strong>{{ app.status.lower() }}</strong>.
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👥</div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+            No Applications Received
+          </h3>
+          <p style="color: var(--text-muted);">
+            When students apply to your posted project or hackathon ideas, their applications will show up here.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 4: Sent Project Applications -->
+    <div class="tab-pane" id="tab-sent-apps">
+      {% if sent_project_apps %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          {% for app in sent_project_apps %}
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                  <span class="badge badge-info" style="margin-bottom: 6px;">{{ app.project_category }}</span>
+                  <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                    {{ app.project_title }}
+                  </h3>
+                  <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 2px;">
+                    Project Owner: <strong>{{ app.owner_name }}</strong> ({{ app.owner_dept }}) &bull; ✉️ {{ app.owner_email }}
+                  </div>
+                </div>
+
+                <div>
+                  <span class="badge {% if app.status == 'Pending' %}badge-warning{% elif app.status == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 0.88rem; padding: 5px 12px;">
+                    {{ app.status }}
+                  </span>
+                </div>
+              </div>
+
+              <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                <strong>Your Application Statement:</strong> "{{ app.message }}"
+              </div>
+
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Applied on: {{ app.created_at }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📝</div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+            No Project Applications Sent
+          </h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            Explore open project postings and apply to collaborate with peers!
+          </p>
+          <a href="{{ url_for('projects') }}" class="btn btn-primary">
+            Browse Campus Projects
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

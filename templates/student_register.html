@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container container-sm">
+  <a href="{{ url_for('home') }}" class="btn-back">&larr; Back to Home</a>
+  <div class="card" style="box-shadow: var(--shadow-lg);">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🎓</div>
+      <h1 class="page-title">Student Registration</h1>
+      <p class="page-subtitle">Join Skill Link to share skills, mentor peers, and collaborate on projects.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('student_register') }}" id="studentRegisterForm">
+      
+      <!-- Section 1: Personal Credentials -->
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.1rem; color: var(--primary); border-bottom: 1.5px solid var(--primary-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+          1. Personal & Account Details
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label" for="full_name">Full Name <span class="required">*</span></label>
+          <input type="text" class="form-control" id="full_name" name="full_name" 
+                 value="{{ form_data.get('full_name', '') }}" placeholder="e.g. Aarav Sharma" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="register_number">Register Number <span class="required">*</span></label>
+            <input type="text" class="form-control" id="register_number" name="register_number" 
+                   value="{{ form_data.get('register_number', '') }}" placeholder="e.g. 21CS101" required>
+            <div class="form-text">Must be unique across the college.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="college_email">College Email ID <span class="required">*</span></label>
+            <input type="email" class="form-control" id="college_email" name="college_email" 
+                   value="{{ form_data.get('college_email', '') }}" placeholder="e.g. student@college.edu" required>
+            <div class="form-text">Used to log in to your account.</div>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="password">Password <span class="required">*</span></label>
+            <input type="password" class="form-control" id="password" name="password" 
+                   placeholder="At least 6 characters" minlength="6" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirm_password">Confirm Password <span class="required">*</span></label>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                   placeholder="Re-enter your password" minlength="6" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Academic Details -->
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.1rem; color: var(--primary); border-bottom: 1.5px solid var(--primary-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+          2. Academic Details
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label" for="department">Department <span class="required">*</span></label>
+          <select class="form-select" id="department" name="department" required>
+            <option value="" disabled {% if not form_data.get('department') %}selected{% endif %}>-- Select Your Department --</option>
+            {% for dept in departments_list %}
+              <option value="{{ dept }}" {% if form_data.get('department') == dept %}selected{% endif %}>{{ dept }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="year_of_study">Year of Study <span class="required">*</span></label>
+            <select class="form-select" id="year_of_study" name="year_of_study" required>
+              <option value="" disabled {% if not form_data.get('year_of_study') %}selected{% endif %}>-- Select Year --</option>
+              {% for yr in years_list %}
+                <option value="{{ yr }}" {% if form_data.get('year_of_study') == yr %}selected{% endif %}>{{ yr }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="section">Section <span class="required">*</span></label>
+            <select class="form-select" id="section" name="section" required>
+              <option value="" disabled {% if not form_data.get('section') %}selected{% endif %}>-- Select Section --</option>
+              {% for sec in sections_list %}
+                <option value="{{ sec }}" {% if form_data.get('section') == sec %}selected{% endif %}>Section {{ sec }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Skill & Project Details -->
+      <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; color: var(--primary); border-bottom: 1.5px solid var(--primary-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+          3. Skills & Learning Interests
+        </h3>
+
+        <div class="form-group">
+          <label class="form-label" for="skills_known">Skills Known (Comma-separated) <span class="required">*</span></label>
+          <input type="text" class="form-control" id="skills_known" name="skills_known" 
+                 value="{{ form_data.get('skills_known', '') }}" placeholder="e.g. Python, Flask, UI/UX, Git, Machine Learning" required>
+          <div class="form-text">List skills you can share or teach other students.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="skills_interested">Skills Interested in Learning (Comma-separated) <span class="required">*</span></label>
+          <input type="text" class="form-control" id="skills_interested" name="skills_interested" 
+                 value="{{ form_data.get('skills_interested', '') }}" placeholder="e.g. React, Cloud Computing, Docker, Flutter, IoT" required>
+          <div class="form-text">Skills you would like help with or want to explore.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="project_experience">Project Experience (Optional)</label>
+          <textarea class="form-control" id="project_experience" name="project_experience" rows="2" 
+                    placeholder="Briefly describe past projects, mini-projects, or hackathon participations...">{{ form_data.get('project_experience', '') }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="certifications">Certifications (Optional)</label>
+          <input type="text" class="form-control" id="certifications" name="certifications" 
+                 value="{{ form_data.get('certifications', '') }}" placeholder="e.g. AWS Cloud Practitioner, Google UX Certificate">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="bio">Bio / Short Intro (Optional)</label>
+          <textarea class="form-control" id="bio" name="bio" rows="2" 
+                    placeholder="A quick note about your interests and collaboration style...">{{ form_data.get('bio', '') }}</textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">
+        Complete Registration &rarr;
+      </button>
+
+      <div style="text-align: center; margin-top: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);">
+        Already registered? <a href="{{ url_for('student_login') }}" style="font-weight: 600;">Login here</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

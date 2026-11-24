@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Skill Link{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      {% if current_student %}
+        <a href="{{ url_for('student_dashboard') }}" class="brand-link" title="Student Dashboard">
+          <div class="brand-logo-icon">SL</div>
+          <div class="brand-name">Skill<span>Link</span></div>
+        </a>
+      {% elif is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="brand-link" title="Dashboard">
+          <div class="brand-logo-icon">SL</div>
+          <div class="brand-name">Skill<span>Link</span></div>
+        </a>
+      {% else %}
+        <a href="{{ url_for('home') }}" class="brand-link" title="Skill Link">
+          <div class="brand-logo-icon">SL</div>
+          <div class="brand-name">Skill<span>Link</span></div>
+        </a>
+      {% endif %}
+
+      {% if current_student or is_admin %}
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</button>
+      {% endif %}
+
+      {% if current_student %}
+        <!-- Authenticated Student Navigation: NO "Home" Link -->
+        <nav class="nav-menu" id="navMenu">
+          <a href="{{ url_for('student_dashboard') }}" class="nav-link {% if request.endpoint == 'student_dashboard' %}active{% endif %}">Dashboard</a>
+          <a href="{{ url_for('student_profile') }}" class="nav-link {% if request.endpoint == 'student_profile' %}active{% endif %}">My Profile</a>
+          <a href="{{ url_for('skill_exchange') }}" class="nav-link {% if request.endpoint == 'skill_exchange' %}active{% endif %}">Skill Exchange</a>
+          <a href="{{ url_for('projects') }}" class="nav-link {% if request.endpoint == 'projects' %}active{% endif %}">Projects & Hackathons</a>
+          <a href="{{ url_for('student_events') }}" class="nav-link {% if request.endpoint == 'student_events' %}active{% endif %}">Events & Hackathons</a>
+          <a href="{{ url_for('requests_page') }}" class="nav-link {% if request.endpoint == 'requests_page' %}active{% endif %}">My Requests</a>
+
+          <div class="nav-user-badge">
+            <span style="font-size: 1.1rem;">🎓</span>
+            <span>{{ current_student.full_name.split()[0] }}</span>
+          </div>
+
+          <a href="{{ url_for('student_logout') }}" class="btn btn-outline btn-sm">Logout</a>
+        </nav>
+
+      {% elif is_admin %}
+        <!-- Authenticated Admin Navigation: NO "Home" Link -->
+        <nav class="nav-menu" id="navMenu">
+          <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">Dashboard</a>
+          
+          <div class="nav-user-badge admin-badge">
+            <span style="font-size: 1.1rem;">🛡️</span>
+            <span>Admin</span>
+          </div>
+
+          <a href="{{ url_for('admin_logout') }}" class="btn btn-outline btn-sm">Logout</a>
+        </nav>
+
+      {% elif not current_student and not is_admin and request.endpoint in ['home', 'student_login', 'admin_login'] %}
+        <!-- Top-Right Platform Badge: ONLY on Homepage, Student Login & Admin Login -->
+        <div class="header-right-area">
+          <div class="header-platform-badge">
+            <img src="{{ url_for('static', filename='images/collaboration.svg') }}" alt="Student Collaboration" class="platform-badge-img" width="28" height="28">
+            <span class="platform-badge-text">College-Wide Collaborative Learning Platform</span>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Flash Messages Alert Banner -->
+  <div class="container flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+            <span>{{ message }}</span>
+            <button type="button" class="alert-close" aria-label="Close alert">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Dynamic Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content" style="justify-content: center; text-align: center;">
+      <div>
+        <strong>Skill Link</strong>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

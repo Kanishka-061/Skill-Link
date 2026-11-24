@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container container-sm">
+  <a href="{{ url_for('student_dashboard') }}" class="btn-back">&larr; Back to Dashboard</a>
+  <div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">View and update your academic details, skills, and portfolio information.</p>
+  </div>
+
+  <div class="card" style="box-shadow: var(--shadow-md);">
+    <form method="POST" action="{{ url_for('student_profile') }}">
+      
+      <!-- Academic Fixed Identifiers -->
+      <div style="background-color: var(--primary-light); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.75rem;">
+        <div style="font-weight: 700; color: var(--primary-dark); margin-bottom: 0.5rem;">
+          Verified College Credentials
+        </div>
+        <div class="form-grid-2">
+          <div>
+            <label class="form-label" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2px;">Register Number</label>
+            <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">
+              {{ student.register_number }}
+            </div>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2px;">College Email ID</label>
+            <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">
+              {{ student.college_email }}
+            </div>
+          </div>
+        </div>
+        <div class="form-text" style="color: var(--primary-dark); margin-top: 8px;">
+          Note: Register number and email are college-verified and cannot be altered directly.
+        </div>
+      </div>
+
+      <!-- Editable Personal & Academic Information -->
+      <div class="form-group">
+        <label class="form-label" for="full_name">Full Name <span class="required">*</span></label>
+        <input type="text" class="form-control" id="full_name" name="full_name" 
+               value="{{ student.full_name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="department">Department <span class="required">*</span></label>
+        <select class="form-select" id="department" name="department" required>
+          {% for dept in departments_list %}
+            <option value="{{ dept }}" {% if student.department == dept %}selected{% endif %}>{{ dept }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="year_of_study">Year of Study <span class="required">*</span></label>
+          <select class="form-select" id="year_of_study" name="year_of_study" required>
+            {% for yr in years_list %}
+              <option value="{{ yr }}" {% if student.year_of_study == yr %}selected{% endif %}>{{ yr }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="section">Section <span class="required">*</span></label>
+          <select class="form-select" id="section" name="section" required>
+            {% for sec in sections_list %}
+              <option value="{{ sec }}" {% if student.section == sec %}selected{% endif %}>Section {{ sec }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Skills and Interests -->
+      <div class="form-group">
+        <label class="form-label" for="skills_known">Skills Known <span class="required">*</span></label>
+        <input type="text" class="form-control" id="skills_known" name="skills_known" 
+               value="{{ student.skills_known }}" placeholder="e.g. Python, Flask, UI/UX, C++, Machine Learning" required>
+        <div class="form-text">Separate skills with commas so peers can discover you.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="skills_interested">Skills Interested in Learning <span class="required">*</span></label>
+        <input type="text" class="form-control" id="skills_interested" name="skills_interested" 
+               value="{{ student.skills_interested }}" placeholder="e.g. Cloud, Docker, React, Flutter, Cybersecurity" required>
+        <div class="form-text">Used to recommend matching mentors and peer partners.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="project_experience">Project Experience</label>
+        <textarea class="form-control" id="project_experience" name="project_experience" rows="3" 
+                  placeholder="Detail your completed or ongoing projects, hackathon wins, GitHub repos...">{{ student.project_experience or '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="certifications">Certifications</label>
+        <input type="text" class="form-control" id="certifications" name="certifications" 
+               value="{{ student.certifications or '' }}" placeholder="e.g. AWS Certified, Coursera Deep Learning, HackerRank Python">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="bio">Bio / About Me</label>
+        <textarea class="form-control" id="bio" name="bio" rows="2" 
+                  placeholder="Write a brief intro about yourself and your collaboration interests...">{{ student.bio or '' }}</textarea>
+      </div>
+
+      <!-- Password Update Section -->
+      <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+        <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+          Change Password (Optional)
+        </h3>
+        <p class="form-text" style="margin-bottom: 1rem;">Leave these fields blank if you do not want to change your password.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="current_password">Current Password</label>
+          <input type="password" class="form-control" id="current_password" name="current_password" placeholder="Enter current password">
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="new_password">New Password</label>
+            <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Min. 6 characters">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirm_new_password">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" placeholder="Confirm new password">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button type="submit" class="btn btn-primary btn-lg">
+          Save Changes
+        </button>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline btn-lg">
+          Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

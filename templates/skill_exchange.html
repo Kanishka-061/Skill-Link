@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Exchange | Skill Link{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a href="{{ url_for('student_dashboard') }}" class="btn-back">&larr; Back to Dashboard</a>
+  <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 class="page-title">Skill Exchange Hub</h1>
+      <p class="page-subtitle">Connect with peers across departments. Exchange skills, mentor each other, and grow together.</p>
+    </div>
+    <a href="{{ url_for('requests_page') }}" class="btn btn-secondary btn-sm">
+      📬 View My Exchange Requests
+    </a>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="card" style="margin-bottom: 2rem; padding: 1.25rem;">
+    <form method="GET" action="{{ url_for('skill_exchange') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+      
+      <div style="flex: 2; min-width: 240px;">
+        <label class="form-label" for="searchSkill" style="font-size: 0.85rem;">Search by Skill or Name</label>
+        <input type="text" class="form-control" id="searchSkill" name="q" 
+               value="{{ query }}" placeholder="e.g. Python, Machine Learning, UI/UX, C++...">
+      </div>
+
+      <div style="flex: 1.5; min-width: 200px;">
+        <label class="form-label" for="filterDept" style="font-size: 0.85rem;">Department</label>
+        <select class="form-select" id="filterDept" name="department">
+          <option value="">All Departments</option>
+          {% for dept in departments_list %}
+            <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="flex: 1; min-width: 140px;">
+        <label class="form-label" for="filterYear" style="font-size: 0.85rem;">Year</label>
+        <select class="form-select" id="filterYear" name="year">
+          <option value="">All Years</option>
+          {% for yr in years_list %}
+            <option value="{{ yr }}" {% if selected_year == yr %}selected{% endif %}>{{ yr }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">
+          🔍 Search
+        </button>
+        {% if query or selected_dept or selected_year %}
+          <a href="{{ url_for('skill_exchange') }}" class="btn btn-outline" title="Clear Filters">
+            Reset
+          </a>
+        {% endif %}
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Peer List Grid -->
+  {% if peers %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
+      {% for peer in peers %}
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <!-- Peer Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                  {{ peer.full_name[0] }}
+                </div>
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                    {{ peer.full_name }}
+                  </h3>
+                  <div style="font-size: 0.82rem; color: var(--text-muted);">
+                    {{ peer.register_number }} &bull; Sec {{ peer.section }}
+                  </div>
+                </div>
+              </div>
+
+              <span class="badge badge-primary">{{ peer.year_of_study }}</span>
+            </div>
+
+            <!-- Dept info -->
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              🎓 {{ peer.department }}
+            </div>
+
+            <!-- Skills Known -->
+            <div style="margin-bottom: 0.85rem;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                Skills Known:
+              </span>
+              <div style="margin-top: 4px;">
+                {% for skill in peer.skills_known.split(',') %}
+                  <span class="tag tag-accent">{{ skill.strip() }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Skills Interested -->
+            <div style="margin-bottom: 1rem;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                Interested in Learning:
+              </span>
+              <div style="margin-top: 4px;">
+                {% for skill in peer.skills_interested.split(',') %}
+                  <span class="tag">{{ skill.strip() }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Optional bio / experience snippet -->
+            {% if peer.bio %}
+              <div style="font-size: 0.85rem; color: var(--text-secondary); background: #f8fafc; border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 1rem; border-left: 3px solid var(--primary-border);">
+                "{{ peer.bio }}"
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Action Button -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              ✉️ {{ peer.college_email }}
+            </div>
+
+            {% if peer.id in sent_map %}
+              <span class="badge {% if sent_map[peer.id] == 'Pending' %}badge-warning{% elif sent_map[peer.id] == 'Accepted' %}badge-success{% else %}badge-danger{% endif %}">
+                Request {{ sent_map[peer.id] }}
+              </span>
+            {% else %}
+              <button type="button" class="btn btn-primary btn-sm" 
+                      data-modal-target="#sendSkillModal"
+                      data-receiver-id="{{ peer.id }}"
+                      data-receiver-name="{{ peer.full_name }}">
+                Send Request &rarr;
+              </button>
+            {% endif %}
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔍</div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+        No Students Found Matching Filters
+      </h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Try searching with a different skill keyword or reset department and year filters.
+      </p>
+      <a href="{{ url_for('skill_exchange') }}" class="btn btn-primary">
+        Reset Search Filters
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Modal: Send Skill Exchange Request -->
+<div class="modal-overlay" id="sendSkillModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Send Skill Exchange Request</h3>
+      <button type="button" class="modal-close">&times;</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('send_skill_request') }}">
+      <div class="modal-body">
+        <input type="hidden" name="receiver_id" id="modalReceiverId">
+
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Connect with <strong id="modalReceiverName" style="color: var(--primary);">Peer</strong> to share knowledge and learn together.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="offered_skill">Skill You Can Offer / Share <span class="required">*</span></label>
+          <input type="text" class="form-control" id="offered_skill" name="offered_skill" 
+                 placeholder="e.g. Python, UI/UX Design, Git Basics" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="wanted_skill">Skill You Want to Learn From Peer <span class="required">*</span></label>
+          <input type="text" class="form-control" id="wanted_skill" name="wanted_skill" 
+                 placeholder="e.g. Machine Learning, React, C++ DSA" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="requestMessage">Message / Introduction (Optional)</label>
+          <textarea class="form-control" id="requestMessage" name="message" rows="3" 
+                    placeholder="Introduce yourself and propose how you can collaborate..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Send Exchange Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
